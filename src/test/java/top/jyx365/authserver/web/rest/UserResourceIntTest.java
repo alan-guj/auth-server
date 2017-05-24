@@ -1,18 +1,16 @@
 package top.jyx365.authserver.web.rest;
 
-import top.jyx365.authserver.AuthServerApp;
-import top.jyx365.authserver.domain.User;
-import top.jyx365.authserver.repository.UserRepository;
-import top.jyx365.authserver.service.MailService;
-import top.jyx365.authserver.service.UserService;
-import top.jyx365.authserver.web.rest.errors.ExceptionTranslator;
-import top.jyx365.authserver.web.rest.vm.ManagedUserVM;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.persistence.EntityManager;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
@@ -21,17 +19,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import top.jyx365.authserver.AuthServerApp;
+import top.jyx365.authserver.domain.User;
+import top.jyx365.authserver.repository.UserRepository;
+import top.jyx365.authserver.service.MailService;
+import top.jyx365.authserver.service.UserService;
+import top.jyx365.authserver.web.rest.errors.ExceptionTranslator;
+import top.jyx365.authserver.web.rest.vm.ManagedUserVM;
 
 /**
  * Test class for the UserResource REST controller.
@@ -73,6 +72,7 @@ public class UserResourceIntTest {
     private UserService userService;
 
     @Autowired
+    @Qualifier("mappingJackson2HttpMessageConverter")
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired

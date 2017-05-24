@@ -1,15 +1,13 @@
 package top.jyx365.authserver.web.rest;
 
-import top.jyx365.authserver.AuthServerApp;
-import top.jyx365.authserver.config.audit.AuditEventConverter;
-import top.jyx365.authserver.domain.PersistentAuditEvent;
-import top.jyx365.authserver.repository.PersistenceAuditEventRepository;
-import top.jyx365.authserver.service.AuditEventService;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.format.support.FormattingConversionService;
@@ -19,13 +17,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import top.jyx365.authserver.AuthServerApp;
+import top.jyx365.authserver.config.audit.AuditEventConverter;
+import top.jyx365.authserver.domain.PersistentAuditEvent;
+import top.jyx365.authserver.repository.PersistenceAuditEventRepository;
+import top.jyx365.authserver.service.AuditEventService;
 
 /**
  * Test class for the AuditResource REST controller.
@@ -49,9 +48,11 @@ public class AuditResourceIntTest {
     private AuditEventConverter auditEventConverter;
 
     @Autowired
+    @Qualifier("mappingJackson2HttpMessageConverter")
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
+    @Qualifier("mvcConversionService")
     private FormattingConversionService formattingConversionService;
 
     @Autowired

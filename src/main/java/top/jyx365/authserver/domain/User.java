@@ -116,7 +116,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private Set<UserCompany> userCompanies = new HashSet<>();
 
     public String getName() {
-        return this.firstName + this.lastName;
+        return this.firstName;
+    }
+
+    public void setName(String name) {
+        this.firstName = name;
     }
 
     @JsonIgnore

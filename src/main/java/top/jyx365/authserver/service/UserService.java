@@ -1,39 +1,38 @@
 package top.jyx365.authserver.service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import org.springframework.transaction.annotation.Transactional;
+import top.jyx365.authserver.service.util.RandomUtil;
 
 import top.jyx365.amqp.annotation.PublishMessage;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
+import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 import top.jyx365.authserver.config.Constants;
 import top.jyx365.authserver.config.weixin.WeixinUserInfo;
 import top.jyx365.authserver.domain.Authority;
 import top.jyx365.authserver.domain.Group;
 import top.jyx365.authserver.domain.User;
+import top.jyx365.authserver.domain.User.UserCompany;
 import top.jyx365.authserver.repository.AuthorityRepository;
 import top.jyx365.authserver.repository.GroupRepository;
 import top.jyx365.authserver.repository.UserRepository;
 import top.jyx365.authserver.security.AuthoritiesConstants;
 import top.jyx365.authserver.security.SecurityUtils;
 import top.jyx365.authserver.service.dto.UserDTO;
-import top.jyx365.authserver.service.util.RandomUtil;
 
 /**
  * Service class for managing users.
@@ -322,11 +321,71 @@ public class UserService {
     }
 
 
+    public User getUserById(Long id) {
+        return userRepository.findOne(id);
+    }
+
+    public List<User> findUsers(User user) {
+        return userRepository.findAll(Example.of(user));
+    }
+
     public User save(User user) {
         processUserGroup(user);
         userRepository.save(user);
         return user;
     }
 
+    @JsonInclude(Include.ALWAYS)
+    @Data
+    public static class UserInfo {
+        private String desc;
+        private String openid;
+        private String email;
+        private Long id;
+        private String mobile;
+        private String name;
+        private String nickname;
+        private String portrait_uri;
+        private String company_id;
+        private String staff_id;
+        private String type;
+
+
+        public static UserInfo convert(User user) {
+            UserInfo userInfo = new UserInfo();
+
+            Set<UserCompany> userCompanies = user.getUserCompanies();
+            Set<Group> userGroups = user.getUserGroups();
+
+            userInfo.setDesc(user.getDescription());
+            userInfo.setEmail(user.getEmail());
+            userInfo.setId(user.getId());
+            userInfo.setMobile(user.getMobile());
+            userInfo.setName(user.getName()!=null?user.getName():user.getNickname());
+            userInfo.setNickname(user.getNickname());
+            userInfo.setPortrait_uri(user.getImageUrl());
+            userInfo.setOpenid(user.getOpenid());
+
+            if(userCompanies != null && !userCompanies.isEmpty()) {
+                UserCompany userCompany = userCompanies.iterator().next();
+                userInfo.setCompany_id(userCompany.getCompanyId());
+                userInfo.setStaff_id(userCompany.getStaffId());
+            }
+
+            userInfo.setType("guest");
+            if(userGroups != null && !userGroups.isEmpty()) {
+                List<String> groups = userGroups.stream().map(Group::getGroupId)
+                    .collect(Collectors.toList());
+                if(groups.contains(Group.SYSTEM_OPERATOR_GROUP))
+                    userInfo.setType("system_operator");
+                else if(groups.contains(Group.ENTERPRISE_USER_GROUP))
+                    userInfo.setType("enterprise_user");
+                else if(groups.contains(Group.USER_GROUP))
+                    userInfo.setType("user");
+            }
+            return userInfo;
+        }
+
+    }
 
 }

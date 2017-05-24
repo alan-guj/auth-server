@@ -221,7 +221,7 @@
             <column name="name" type="varchar(150)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="varchar(255)"/>
+            <column name="value" type="varchar(2048)"/>
         </createTable>
         <addPrimaryKey columnNames="event_id, name" tableName="jhi_persistent_audit_evt_data"/>
 

@@ -63,7 +63,7 @@ public class Group implements Serializable {
             inverseJoinColumns=@JoinColumn(name="USER_ID"))
     private Set<User> users;
 
-    private Group(String groupId) {
+    public Group(String groupId) {
         this.groupId = groupId;
     }
 

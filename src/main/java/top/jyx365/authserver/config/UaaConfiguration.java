@@ -7,6 +7,8 @@ import java.security.KeyPair;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -14,6 +16,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.core.io.ClassPathResource;
+
+import org.springframework.http.HttpMethod;
+import org.springframework.web.filter.CorsFilter;
 
 import org.springframework.security.authentication.AuthenticationManager;
 
@@ -28,22 +33,24 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import org.springframework.web.filter.CorsFilter;
-
 import top.jyx365.authserver.security.AuthoritiesConstants;
+import top.jyx365.authserver.security.DatabaseClientDetailsService;
 
 @Configuration
 @EnableAuthorizationServer
+@Slf4j
 public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
 
     @EnableResourceServer
@@ -55,7 +62,10 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
 
         private final CorsFilter corsFilter;
 
-        public ResourceServerConfiguration(TokenStore tokenStore, JHipsterProperties jHipsterProperties, CorsFilter corsFilter) {
+
+        public ResourceServerConfiguration(TokenStore tokenStore,
+                JHipsterProperties jHipsterProperties,
+                CorsFilter corsFilter) {
             this.tokenStore = tokenStore;
             this.jHipsterProperties = jHipsterProperties;
             this.corsFilter = corsFilter;
@@ -63,17 +73,16 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
 
         @Override
         public void configure(HttpSecurity http) throws Exception {
-            http
-                .requestMatcher(
+            http.requestMatcher(
                             new AndRequestMatcher(new AntPathRequestMatcher("/api/**"),
                              new RequestMatcher() {
                                 public boolean matches(HttpServletRequest request) {
-                                    String auth = request.getHeader("Authentication");
+                                    String auth = request.getHeader("Authorization");
                                     return  auth != null && auth.toLowerCase().startsWith("bearer");
                                 }
                             }))
-
                 .exceptionHandling()
+                //.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/entry/weixin/qrcode"))
                 .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
             .and()
                 .csrf()
@@ -93,7 +102,9 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
                 .antMatchers("/api/account/reset_password/init").permitAll()
                 .antMatchers("/api/account/reset_password/finish").permitAll()
                 .antMatchers("/api/profile-info").permitAll()
-                .antMatchers("/api/**").authenticated()
+                .antMatchers("/api/account","/api/account/**","/api/*/users/current","/api/*/users/check_token").authenticated()
+                .antMatchers("/api/**")
+                        .access("hasAnyAuthority('ROLE_SYSTEM','ROLE_ADMIN')")
                 .antMatchers("/management/health").permitAll()
                 .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/v2/api-docs/**").permitAll()
@@ -108,16 +119,19 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
     }
 
     private final JHipsterProperties jHipsterProperties;
+    private final ClientDetailsService clientDetailsService;
 
-    public UaaConfiguration(JHipsterProperties jHipsterProperties) {
+    public UaaConfiguration(JHipsterProperties jHipsterProperties, DatabaseClientDetailsService clientDetailsService) {
+        log.debug("UaaConfiguration init:{}", clientDetailsService == null);
         this.jHipsterProperties = jHipsterProperties;
+        this.clientDetailsService = clientDetailsService;
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.withClientDetails(clientDetailsService);
         /*
         For a better client design, this should be done by a ClientDetailsService (similar to UserDetailsService).
-         */
         clients.inMemory()
             .withClient("web_app")
             .scopes("openid")
@@ -129,12 +143,15 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
             .scopes("web-app")
             .autoApprove(true)
             .authorizedGrantTypes("client_credentials");
+         */
     }
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints.authenticationManager(authenticationManager).accessTokenConverter(
-                jwtAccessTokenConverter());
+        endpoints.authenticationManager(authenticationManager)
+            .accessTokenConverter(jwtAccessTokenConverter())
+            .pathMapping("/oauth/token","/oauth/access_token")
+            .allowedTokenEndpointRequestMethods(HttpMethod.GET,HttpMethod.POST);
     }
 
     @Autowired
@@ -167,7 +184,8 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-        oauthServer.tokenKeyAccess("permitAll()").checkTokenAccess(
-                "isAuthenticated()");
+        oauthServer.tokenKeyAccess("permitAll()")
+            .checkTokenAccess("isAuthenticated()")
+            .allowFormAuthenticationForClients();
     }
 }

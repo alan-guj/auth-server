@@ -1,0 +1,35 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "top.jyx365.authserver",
+      "nativeLanguage": "zh-cn"
+    },
+    "jhipsterVersion": "4.4.1",
+    "baseName": "AuthServer",
+    "packageName": "top.jyx365.authserver",
+    "packageFolder": "top/jyx365/authserver",
+    "serverPort": "9999",
+    "authenticationType": "uaa",
+    "hibernateCache": "hazelcast",
+    "clusteredHttpSession": false,
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "h2Disk",
+    "prodDatabaseType": "mysql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": "consul",
+    "buildTool": "gradle",
+    "enableSocialSignIn": false,
+    "enableTranslation": true,
+    "applicationType": "uaa",
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "skipClient": true,
+    "nativeLanguage": "zh-cn",
+    "languages": [
+      "zh-cn"
+    ],
+    "clientPackageManager": "yarn"
+  }
+}

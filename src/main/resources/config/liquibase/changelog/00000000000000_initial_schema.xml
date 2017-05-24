@@ -100,7 +100,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="login" type="varchar(50)">
-                <constraints unique="true" nullable="false"/>
+                <constraints unique="true" nullable="true"/>
             </column>
             <column name="password_hash" type="varchar(60)"/>
             <column name="description" type="VARCHAR(2048)"/>

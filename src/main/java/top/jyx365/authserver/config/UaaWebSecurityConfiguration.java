@@ -1,19 +1,26 @@
 package top.jyx365.authserver.config;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.http.HttpMethod;
+
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 
-import javax.annotation.PostConstruct;
+import top.jyx365.authserver.security.AuthoritiesConstants;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -47,17 +54,38 @@ public class UaaWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring()
-            .antMatchers(HttpMethod.OPTIONS, "/**")
-            .antMatchers("/app/**/*.{js,html}")
-            .antMatchers("/bower_components/**")
-            .antMatchers("/i18n/**")
-            .antMatchers("/content/**")
-            .antMatchers("/swagger-ui/index.html")
-            .antMatchers("/test/**")
-            .antMatchers("/h2-console/**");
+    public void configure(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .headers().frameOptions().disable()
+        .and()
+            .authorizeRequests()
+            .antMatchers(
+                    "/app/**/*.{js,html}",
+                    "/bower_components/**",
+                    "/i18n/**",
+                    "/content/**",
+                    "/swagger-ui/index.html",
+                    "/test/**",
+                    "/h2-console/**"
+                    ).permitAll()
+            .antMatchers("/api/**").hasAuthority(AuthoritiesConstants.ADMIN)
+            .anyRequest().authenticated()
+            .and().formLogin();
     }
+
+    //@Override
+    //public void configure(WebSecurity web) throws Exception {
+        //web.ignoring()
+            //.antMatchers(HttpMethod.OPTIONS, "/**")
+            //.antMatchers("/app/**/*.{js,html}")
+            //.antMatchers("/bower_components/**")
+            //.antMatchers("/i18n/**")
+            //.antMatchers("/content/**")
+            //.antMatchers("/swagger-ui/index.html")
+            //.antMatchers("/test/**")
+            //.antMatchers("/h2-console/**");
+    //}
 
     @Bean
     public SecurityEvaluationContextExtension securityEvaluationContextExtension() {

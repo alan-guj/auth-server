@@ -1,17 +1,25 @@
 package top.jyx365.authserver.config;
 
-import top.jyx365.authserver.security.AuthoritiesConstants;
-
 import io.github.jhipster.config.JHipsterProperties;
+
+import java.security.KeyPair;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.core.io.ClassPathResource;
+
 import org.springframework.security.authentication.AuthenticationManager;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -24,11 +32,15 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
+
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
 import org.springframework.web.filter.CorsFilter;
 
-import javax.servlet.http.HttpServletResponse;
-import java.security.KeyPair;
+import top.jyx365.authserver.security.AuthoritiesConstants;
 
 @Configuration
 @EnableAuthorizationServer
@@ -52,6 +64,15 @@ public class UaaConfiguration extends AuthorizationServerConfigurerAdapter {
         @Override
         public void configure(HttpSecurity http) throws Exception {
             http
+                .requestMatcher(
+                            new AndRequestMatcher(new AntPathRequestMatcher("/api/**"),
+                             new RequestMatcher() {
+                                public boolean matches(HttpServletRequest request) {
+                                    String auth = request.getHeader("Authentication");
+                                    return  auth != null && auth.toLowerCase().startsWith("bearer");
+                                }
+                            }))
+
                 .exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
             .and()

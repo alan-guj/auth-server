@@ -1,28 +1,39 @@
 package top.jyx365.authserver.service;
 
-import top.jyx365.authserver.domain.Authority;
-import top.jyx365.authserver.domain.User;
-import top.jyx365.authserver.repository.AuthorityRepository;
-import top.jyx365.authserver.config.Constants;
-import top.jyx365.authserver.repository.UserRepository;
-import top.jyx365.authserver.security.AuthoritiesConstants;
-import top.jyx365.authserver.security.SecurityUtils;
-import top.jyx365.authserver.service.util.RandomUtil;
-import top.jyx365.authserver.service.dto.UserDTO;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import top.jyx365.amqp.annotation.PublishMessage;
+
 import java.util.*;
-import java.util.stream.Collectors;
+import top.jyx365.authserver.config.Constants;
+import top.jyx365.authserver.config.weixin.WeixinUserInfo;
+import top.jyx365.authserver.domain.Authority;
+import top.jyx365.authserver.domain.Group;
+import top.jyx365.authserver.domain.User;
+import top.jyx365.authserver.repository.AuthorityRepository;
+import top.jyx365.authserver.repository.GroupRepository;
+import top.jyx365.authserver.repository.UserRepository;
+import top.jyx365.authserver.security.AuthoritiesConstants;
+import top.jyx365.authserver.security.SecurityUtils;
+import top.jyx365.authserver.service.dto.UserDTO;
+import top.jyx365.authserver.service.util.RandomUtil;
 
 /**
  * Service class for managing users.
@@ -35,14 +46,33 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final GroupRepository groupRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     private final AuthorityRepository authorityRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository) {
+    private final Group userGroup;
+
+    private final Group guestGroup;
+
+    private final Group enterpriseUserGroup;
+
+    @Autowired
+    private UserService self;
+
+    public UserService(UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            AuthorityRepository authorityRepository,
+            GroupRepository groupRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.groupRepository = groupRepository;
+
+        this.guestGroup = groupRepository.findOne(Group.GUEST_GROUP);
+        this.userGroup = groupRepository.findOne(Group.USER_GROUP);
+        this.enterpriseUserGroup = groupRepository.findOne(Group.ENTERPRISE_USER_GROUP);
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -240,4 +270,63 @@ public class UserService {
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
     }
+
+    public User weixinUserLogin(WeixinUserInfo userInfo) {
+        log.debug("weixinUserLogin");
+        return userRepository.findOneWithAuthoritiesByOpenid(userInfo.getOpenid()).map( user -> {
+            if(user.getNickname() == null || !user.getNickname().equals(userInfo.getNickname())
+                    || user.getImageUrl() == null || !user.getImageUrl().equals(userInfo.getHeadimgurl()))
+                return self.updateWeixinUserInfo(user, userInfo);
+            return user;
+        }).orElseGet(() -> {
+            return self.addNewWeixinUser(userInfo);
+        });
+    }
+
+    @PublishMessage
+    public User updateWeixinUserInfo(User user, WeixinUserInfo userInfo) {
+        user.setNickname(userInfo.getNickname());
+        user.setImageUrl(userInfo.getHeadimgurl());
+        return save(user);
+    }
+
+    @PublishMessage
+    public User addNewWeixinUser(WeixinUserInfo userInfo) {
+        User user = new User();
+        user.setOpenid(userInfo.getOpenid());
+        user.setNickname(userInfo.getNickname());
+        user.setImageUrl(userInfo.getHeadimgurl());
+        user.setActivated(true);
+        return save(user);
+    }
+
+    public User processUserGroup(User user) {
+
+        user.getUserGroups().add(this.guestGroup);
+
+        if(user.getMobile() != null) {
+            user.getUserGroups().add(this.userGroup);
+            user.getUserGroups().remove(this.userGroup);
+        } else {
+            user.getUserGroups().remove(this.userGroup);
+        }
+
+        if(user.getUserCompanies() != null && !user.getUserCompanies().isEmpty()){
+            user.getUserGroups().add(this.enterpriseUserGroup);
+            user.getUserGroups().remove(this.guestGroup);
+        } else {
+            user.getUserGroups().remove(this.enterpriseUserGroup);
+        }
+
+        return user;
+    }
+
+
+    public User save(User user) {
+        processUserGroup(user);
+        userRepository.save(user);
+        return user;
+    }
+
+
 }

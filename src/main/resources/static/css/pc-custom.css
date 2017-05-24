@@ -1,0 +1,91 @@
+﻿.clear, .clear:after{clear:both; content:"";}
+
+html{overflow-y:scroll;} /*让IE和Firefox（包括chrome）浏览器默认产生滚动条的滚动槽*/
+/*PC img 轮播查看*/
+.cs-slider-outer{
+  position:relative;
+}
+.cs-icon-prev{
+  position: absolute;
+  left: 4%;
+  top:50%;
+  margin-top:-20px;
+  z-index:3;
+  font-size: 28px;
+  color: #CC0033;
+  height: 16%;
+  border: solid 1px #999999;
+}
+.cs-icon-next{
+  position: absolute;
+  right: 4%;
+  top:50%;
+  margin-top:-20px;
+  z-index:3;
+  font-size: 28px;
+  color: #CC0033;
+  height: 16%;
+  border: solid 1px #999999;
+}
+.cs-icon-prev:hover,.cs-icon-next:hover{
+  border:solid 1px #CC0033;
+  background: #fff;
+}
+.cs-pc{
+  max-width:640px;
+  margin:0 auto;
+}
+
+@media (max-width: 767px){.cs-icon-prev, .cs-icon-next{display:none} }
+
+/*PC 上传*/
+.cs-fileinputBox {
+  position: relative;
+  height: 35px;
+  margin: 5px 0;
+}
+.cs-type-file{
+  position:absolute;
+  top:0; right:0;
+  height:35px;
+  filter:alpha(opacity:0);
+  opacity: 0;
+  width:100%;
+  z-index:10000; 
+}
+.cs-upload-progress{
+  margin-top:15px;
+  margin-bottom:0;
+  background-color: #ddd;
+  float:left;
+  height:16px;
+  width:240px;
+}
+.cs-upload-progress .progress-bar{
+  line-height: 16px;
+
+}
+.cs-select{
+  padding-right:16px;
+  background:url(../images/arrow_down.png) no-repeat right center;
+
+}
+
+.tabbox{width:100%;height:auto;background:#f0f0f0;}
+.tabbox .tab{overflow:hidden;background:#ccc;}
+.tabbox .tab a{display:block;padding:10px 20px;float:left;text-decoration:none;color:#333;}
+.tabbox .tab a:hover{background:#E64E3F;color:#fff;text-decoration:none;}
+.tabbox .tab a.on{background:#E64E3F;color:#fff;text-decoration:none;}
+.tabbox .content .subContent{display:none;}
+
+.cs-inTitle-btn{display:inline-block;width:auto; height:36px; background:#fff;color:#4b0; border-radius:18px;
+position: absolute;padding: 0px 12px 6px;}
+.cs-inTitle-btn:hover{background:#d0d0d0;}
+.cs-pc-title{font-size: 16px;border-bottom: solid 1px #d0d0d0;margin:5px 15px 0px 15px;}
+
+
+.cs-shareDialog{display: none;}
+.cs-erweimaImgField{width: 100%;text-align: center;margin: 0 auto;}
+.cs-shareDialog .cs-wdialog-mask{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.3);z-index:99999;}
+.cs-shareDialog .cs-wdialog-main{position:fixed;margin:auto;top:50px;left:28%;width:44%;background:#fff;z-index:100000; border:1px 0px solid #d0d0d0;}
+

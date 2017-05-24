@@ -45,10 +45,8 @@ public class Group implements Serializable {
     @Column(length = 2000)
     private String groupDescription;
 
-    //@ManyToMany(fetch = FetchType.EAGER,mappedBy = "groups")
-    //private Set<Authority> authorities;
     @JsonIgnore
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "group_authorities",
         joinColumns = {@JoinColumn(name = "group_id")},

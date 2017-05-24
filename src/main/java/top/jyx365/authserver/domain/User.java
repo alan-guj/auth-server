@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -15,8 +17,8 @@ import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import org.hibernate.annotations.BatchSize;
@@ -24,6 +26,9 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import org.hibernate.validator.constraints.Email;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.persistence.*;
 import top.jyx365.authserver.config.Constants;
@@ -71,6 +76,41 @@ public class User extends AbstractAuditingEntity implements Serializable {
     inverseJoinColumns=@JoinColumn(name="GROUP_ID"))
     private Set<Group> userGroups = new HashSet<>();
 
+    public void setOrigin(String origin) {
+        this.origin = origin;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+    public void setOpenid(String openid) {
+        this.openid = openid;
+    }
+
+    public String getOpenid() {
+        return openid;
+    }
     @ElementCollection( fetch = FetchType.EAGER )
     @CollectionTable( name = "user_companies" )
     private Set<UserCompany> userCompanies = new HashSet<>();
@@ -79,28 +119,15 @@ public class User extends AbstractAuditingEntity implements Serializable {
         return this.firstName + this.lastName;
     }
 
-    public Set<Authority> getAllAuthorities() {
+    @JsonIgnore
+    public List<GrantedAuthority> getGrantedAuthorities() {
         Set<Authority> auths = new HashSet<Authority>();
         auths.addAll(this.authorities);
-        Set<Group> groups = this.userGroups;
-        groups.forEach( g -> {
+        this.userGroups.forEach( g -> {
             auths.addAll(g.getAuthorities());
         });
-        return auths;
-        //if(roles != null)
-            //for (Role role : this.userRoles) {
-                //grantedAuths.add(new SimpleGrantedAuthority("ROLE_"+role.getRoleId()));
-            //}
-
-        //if(groups != null)
-            //for (Group group: this.userGroups){
-                //Set<Role> groupRoles = group.getRoles();
-                //if(groupRoles != null)
-                    //for (Role role : group.getRoles()) {
-                        //grantedAuths.add(new SimpleGrantedAuthority("ROLE_"+role.getRoleId()));
-                    //}
-            //}
-        //return grantedAuths;
+        return auths.stream().map( authority -> new SimpleGrantedAuthority(authority.getName()))
+            .collect(Collectors.toList());
     }
 
     /*Added attributes end*/
@@ -111,14 +138,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    //@NotNull
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = false)
+    @Column(length = 50, unique = true, nullable = true)
     private String login;
 
     @JsonIgnore
-    @NotNull
+    //@NotNull
     @Size(min = 60, max = 60)
     @Column(name = "password_hash",length = 60)
     private String password;
@@ -164,9 +191,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @JsonIgnore
     @ManyToMany
     @JoinTable(
-        name = "user_authorities",
-        joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
-        inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "name")})
+    name = "user_authorities",
+    joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
+    inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "name")})
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
@@ -253,11 +280,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     public Instant getResetDate() {
-       return resetDate;
+        return resetDate;
     }
 
     public void setResetDate(Instant resetDate) {
-       this.resetDate = resetDate;
+        this.resetDate = resetDate;
     }
     public String getLangKey() {
         return langKey;
@@ -277,21 +304,21 @@ public class User extends AbstractAuditingEntity implements Serializable {
 
     //@Override
     //public boolean equals(Object o) {
-        //if (this == o) {
-            //return true;
-        //}
-        //if (o == null || getClass() != o.getClass()) {
-            //return false;
-        //}
+    //if (this == o) {
+    //return true;
+    //}
+    //if (o == null || getClass() != o.getClass()) {
+    //return false;
+    //}
 
-        //User user = (User) o;
+    //User user = (User) o;
 
-        //return login.equals(user.login);
+    //return login.equals(user.login);
     //}
 
     //@Override
     //public int hashCode() {
-        //return login.hashCode();
+    //return login.hashCode();
     //}
 
     @Override
@@ -306,5 +333,20 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", langKey='" + langKey + '\'' +
             ", activationKey='" + activationKey + '\'' +
             "}";
+    }
+    public void setUserGroups(Set<Group> userGroups) {
+        this.userGroups = userGroups;
+    }
+
+    public Set<Group> getUserGroups() {
+        return userGroups;
+    }
+
+    public void setUserCompanies(Set<UserCompany> userCompanies) {
+        this.userCompanies = userCompanies;
+    }
+
+    public Set<UserCompany> getUserCompanies() {
+        return userCompanies;
     }
 }

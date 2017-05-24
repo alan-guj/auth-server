@@ -1,0 +1,94 @@
+table.tablesorter {
+
+}
+table.tablesorter thead tr .header {
+    background-image: url(../images/bg.gif);
+    background-repeat: no-repeat;
+    background-position: center right;
+    cursor: pointer;
+}
+
+table.tablesorter thead tr .headerSortUp {
+    background-image: url(../images/asc.gif);
+}
+
+table.tablesorter thead tr .headerSortDown {
+    background-image: url(../images/desc.gif);
+}
+/*******************************数据表格**************************/
+table.ui-datagrid {
+    border-collapse: collapse;
+    border: 1px solid #abadb3;
+    border-collapse: collapse;
+    border-spacing: 0px;
+}
+
+table.ui-datagrid tr {
+    line-height: 175%;
+    background-color:expression((this.sectionRowIndex%2==0)?"#f6f6f6":"#ffffff");
+}
+
+
+table.ui-datagrid td {
+    text-align: center;
+    vertical-align: middle;
+    border:none;
+    border-right: 1px solid #abadb3;
+    border-bottom: 1px solid #abadb3;
+    padding: 2px 6px 1px 6px;
+    color: #343434;
+}
+
+table.ui-datagrid th {
+	text-align: center;
+	vertical-align: middle;
+    border: 1px solid #abadb3;
+    background: #ffffff;
+    padding: 2px 6px 1px 6px;
+}
+
+table.ui-datagrid .ui-tr-hover {
+    background: #ffa800;
+    color: #545454;
+}
+
+table.ui-datagrid .ui-tr-selected {
+    background: #ffa800;
+    color: #545454;
+}
+table.ui-datagrid th input[type="checkbox"]{
+	margin-bottom: 7px;
+}
+table.ui-datagrid td input[type="checkbox"]{
+	margin-bottom: 6px;
+}
+/*筛选结果*/
+.siftResult{ padding:10px; margin:10px;background: #d8ecef; border:1px solid #00bef7;}
+.siftResult table.ui-datagrid{border-color: #ddd; }
+.siftResult table.ui-datagrid th.header{padding-right:16px;}
+.siftResult table.ui-datagrid th{padding-top:8px; padding-bottom: 8px; border-color: #ddd}
+.siftResult table.ui-datagrid td{border-color: #ddd;}
+.siftResult table.ui-datagrid .ui-tr-odd {background:#f9f9f9 }
+.siftResult table.ui-datagrid tr{background: #fff;}
+.siftResult table.ui-datagrid .ui-tr-hover{background:#e6e6e6;}
+.showStyle{float:left;margin-bottom:12px; color: #002457}
+.showStyle .select{background:#fff; border:1px solid #ddd; padding:3px;}
+.siftResult .btnarea{float:right;}
+.siftResult .btnarea .ui-btn-S{line-height:19px;width:auto; height:auto; padding:4px 10px; background:#009095 url(../images/tableIco.png) no-repeat; border:1px solid #008186; color: #fff; }
+.siftResult .btnarea .ui-btn-S-hover{background-color: #007b7f; border-color: #008186}
+.siftResult .btnarea .ui-btn-S.del.ui-btn-S-hover{background-color: #d80d14; border-color: #e8151d}
+.siftResult .btnarea .ui-btn-S.add{background-position: 0 4px; padding-left:22px;}
+.siftResult .btnarea .ui-btn-S.import{background-position: 0 -18px; padding-left:22px;}
+.siftResult .btnarea .ui-btn-S.outport{background-position: 0 -39px; padding-left:22px;}
+.siftResult .btnarea .ui-btn-S.del{background-color:#f02a2a; background-position: 0 -62px; border-color: #e8151d; padding-left:22px;}
+.siftResult .btnarea .ui-btn-S.view{background-position: 0 -84px; padding-left:22px;}
+.siftResult .btnarea .ui-btn-S.edit{background-position: 0 -106px; padding-left:22px;}
+.table-btnarea{white-space: nowrap; width:200px;}
+
+/*分页*/
+.page{float:right; margin-top:10px; height: 30px;}
+.page .ipt{ height: 29px;line-height:21px; margin-bottom: 3px;background:#fff; border:1px solid #ddd; padding:3px;text-align: center;}
+.page a{display: inline-block;line-height:21px; padding:3px 10px; background: #fff; border:1px solid #ddd; border-right:0; color:#0d638f}
+.page a.active{color: #999}
+.page a.active, .page a:hover{background-color: #f5f5f5}
+.page a.next, .page a.sure{border-right:1px solid #ddd;}

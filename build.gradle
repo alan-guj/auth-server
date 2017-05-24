@@ -164,6 +164,8 @@ dependencies {
     compile('commons-codec:commons-codec:1.10')
     compile('top.jyx365.service:spring-common-lib:0.0.5-SNAPSHOT')
 
+    compile "org.springframework.boot:spring-boot-starter-data-redis"
+
     compile "io.github.jhipster:jhipster:${jhipster_server_version}"
     compile "io.dropwizard.metrics:metrics-core:${dropwizard_metrics_version}"
     compile "io.dropwizard.metrics:metrics-jcache:${dropwizard_metrics_version}"

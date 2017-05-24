@@ -1,0 +1,10 @@
+group_id;group_name;group_description
+ENTERPRISE_USER_GROUP;企业用户组;企业用户组
+GUEST_GROUP;游客组;游客组
+USER_GROUP;注册用户组;注册用户组
+SYSTEM_SERVICE_GROUP;系统服务组;系统服务组
+SYSTEM_WEB_GROUP;系统WEB服务组;系统WEB服务组
+SYSTEM_OPERATOR_GROUP;系统维护人员组;系统维护人员组
+SYSTEM_DEVELOPER_GROUP;系统开发人员组;系统开发人员组
+ADMIN_GROUP;系统管理员;系统管理员
+

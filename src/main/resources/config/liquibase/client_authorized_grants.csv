@@ -1,0 +1,6 @@
+client_client_id;authorized_grant_types
+internal;client_credentials
+internal;password
+internal;authorization_code
+internal;refresh_token
+internal;implicit

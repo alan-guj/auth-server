@@ -1,30 +1,109 @@
 package top.jyx365.authserver.domain;
 
-import top.jyx365.authserver.config.Constants;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.validator.constraints.Email;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.time.Instant;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import org.hibernate.validator.constraints.Email;
+
+import javax.persistence.*;
+import top.jyx365.authserver.config.Constants;
 
 /**
  * A user.
  */
 @Entity
-@Table(name = "user")
+@Table(name = "users")
+@EqualsAndHashCode(callSuper=false,of={"id","login"})
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class User extends AbstractAuditingEntity implements Serializable {
+
+    @Embeddable
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @EqualsAndHashCode(of={"companyId"})
+    public static class UserCompany implements Serializable{
+
+        private static final long serialVersionUID = -8366929034533774130L;
+        private String companyId;
+        private String staffId;
+    }
+    /*Added attributes start*/
+    @Column(unique = true)
+    private String openid;
+
+    private String nickname;
+
+    private String mobile;
+
+    @Column(length = 2048)
+    private String description;
+
+    private String origin;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+    name="group_users",
+    joinColumns=@JoinColumn(name="USER_ID"),
+    inverseJoinColumns=@JoinColumn(name="GROUP_ID"))
+    private Set<Group> userGroups = new HashSet<>();
+
+    @ElementCollection( fetch = FetchType.EAGER )
+    @CollectionTable( name = "user_companies" )
+    private Set<UserCompany> userCompanies = new HashSet<>();
+
+    public String getName() {
+        return this.firstName + this.lastName;
+    }
+
+    public Set<Authority> getAllAuthorities() {
+        Set<Authority> auths = new HashSet<Authority>();
+        auths.addAll(this.authorities);
+        Set<Group> groups = this.userGroups;
+        groups.forEach( g -> {
+            auths.addAll(g.getAuthorities());
+        });
+        return auths;
+        //if(roles != null)
+            //for (Role role : this.userRoles) {
+                //grantedAuths.add(new SimpleGrantedAuthority("ROLE_"+role.getRoleId()));
+            //}
+
+        //if(groups != null)
+            //for (Group group: this.userGroups){
+                //Set<Role> groupRoles = group.getRoles();
+                //if(groupRoles != null)
+                    //for (Role role : group.getRoles()) {
+                        //grantedAuths.add(new SimpleGrantedAuthority("ROLE_"+role.getRoleId()));
+                    //}
+            //}
+        //return grantedAuths;
+    }
+
+    /*Added attributes end*/
 
     private static final long serialVersionUID = 1L;
 
@@ -85,7 +164,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @JsonIgnore
     @ManyToMany
     @JoinTable(
-        name = "user_authority",
+        name = "user_authorities",
         joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},
         inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "name")})
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -196,24 +275,24 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.authorities = authorities;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    //@Override
+    //public boolean equals(Object o) {
+        //if (this == o) {
+            //return true;
+        //}
+        //if (o == null || getClass() != o.getClass()) {
+            //return false;
+        //}
 
-        User user = (User) o;
+        //User user = (User) o;
 
-        return login.equals(user.login);
-    }
+        //return login.equals(user.login);
+    //}
 
-    @Override
-    public int hashCode() {
-        return login.hashCode();
-    }
+    //@Override
+    //public int hashCode() {
+        //return login.hashCode();
+    //}
 
     @Override
     public String toString() {

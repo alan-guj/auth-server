@@ -15,7 +15,87 @@
         The initial schema has the '00000000000001' id, so that it is over-written if we re-generate it.
     -->
     <changeSet id="00000000000001" author="jhipster">
-        <createTable tableName="user">
+        <createTable tableName="clients">
+            <column name="client_id" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="access_token_validity_seconds" type="INT"/>
+            <column name="client_secret" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="refresh_token_validity_seconds" type="INT"/>
+            <column defaultValueNumeric="1" name="secret_required" type="TINYINT(1)"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+
+        <createTable tableName="client_authorized_grants">
+            <column name="client_client_id" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authorized_grant_types" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="client_registered_redirect_uris">
+            <column name="client_client_id" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="registered_redirect_uri" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="client_scopes">
+            <column name="client_client_id" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scope" type="VARCHAR(255)"/>
+        </createTable>
+
+        <loadData encoding="UTF-8"
+                      file="config/liquibase/clients.csv"
+                      separator=";"
+                      tableName="clients"/>
+        <loadData encoding="UTF-8"
+                      file="config/liquibase/client_authorized_grants.csv"
+                      separator=";"
+                      tableName="client_authorized_grants"/>
+        <loadData encoding="UTF-8"
+                      file="config/liquibase/client_scopes.csv"
+                      separator=";"
+                      tableName="client_scopes"/>
+
+        <createTable tableName="groups">
+            <column name="group_id" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_description" type="VARCHAR(2000)"/>
+            <column name="group_name" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="group_users">
+            <column name="group_id" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <loadData encoding="UTF-8"
+                  file="config/liquibase/groups.csv"
+                  separator=";"
+                  tableName="groups"/>
+        <loadData encoding="UTF-8"
+                  file="config/liquibase/group_users.csv"
+                  separator=";"
+                  tableName="group_users"/>
+
+        <createTable tableName="user_companies">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="VARCHAR(255)"/>
+            <column name="staff_id" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createTable tableName="users">
             <column name="id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -23,6 +103,11 @@
                 <constraints unique="true" nullable="false"/>
             </column>
             <column name="password_hash" type="varchar(60)"/>
+            <column name="description" type="VARCHAR(2048)"/>
+            <column name="mobile" type="VARCHAR(255)"/>
+            <column name="nickname" type="VARCHAR(255)"/>
+            <column name="openid" type="VARCHAR(255)"/>
+            <column name="origin" type="VARCHAR(255)"/>
             <column name="first_name" type="varchar(50)"/>
             <column name="last_name" type="varchar(50)"/>
             <column name="email" type="varchar(100)">
@@ -48,23 +133,43 @@
             <column name="last_modified_date" type="timestamp"/>
         </createTable>
         <createIndex indexName="idx_user_login"
-            tableName="user"
+            tableName="users"
             unique="true">
             <column name="login" type="varchar(50)"/>
         </createIndex>
+        <createIndex indexName="idx_user_openid"
+            tableName="users"
+            unique="true">
+            <column name="openid" type="varchar(255)"/>
+        </createIndex>
 
         <createIndex indexName="idx_user_email"
-            tableName="user"
+            tableName="users"
             unique="true">
             <column name="email" type="varchar(100)"/>
         </createIndex>
-        <createTable tableName="authority">
+        <createIndex indexName="idx_user_mobile"
+            tableName="users"
+            unique="false">
+            <column name="mobile" type="varchar(255)"/>
+        </createIndex>
+
+        <loadData encoding="UTF-8"
+                  file="config/liquibase/users.csv"
+                  separator=";"
+                  tableName="users">
+            <column name="activated" type="boolean"/>
+            <column name="created_date" type="timestamp"/>
+        </loadData>
+        <dropDefaultValue tableName="users" columnName="created_date" columnDataType="datetime"/>
+
+        <createTable tableName="authorities">
             <column name="name" type="varchar(50)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
 
-        <createTable tableName="user_authority">
+        <createTable tableName="user_authorities">
             <column name="user_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
@@ -73,37 +178,31 @@
             </column>
         </createTable>
 
-        <addPrimaryKey columnNames="user_id, authority_name" tableName="user_authority"/>
 
-        <addForeignKeyConstraint baseColumnNames="authority_name"
-                                 baseTableName="user_authority"
-                                 constraintName="fk_authority_name"
-                                 referencedColumnNames="name"
-                                 referencedTableName="authority"/>
 
-        <addForeignKeyConstraint baseColumnNames="user_id"
-                                 baseTableName="user_authority"
-                                 constraintName="fk_user_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="user"/>
-        <loadData encoding="UTF-8"
-                  file="config/liquibase/users.csv"
-                  separator=";"
-                  tableName="user">
-            <column name="activated" type="boolean"/>
-            <column name="created_date" type="timestamp"/>
-        </loadData>
-        <dropDefaultValue tableName="user" columnName="created_date" columnDataType="datetime"/>
+        <createTable tableName="group_authorities">
+            <column name="group_id" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
 
         <loadData encoding="UTF-8"
                   file="config/liquibase/authorities.csv"
                   separator=";"
-                  tableName="authority"/>
+                  tableName="authorities"/>
 
         <loadData encoding="UTF-8"
                   file="config/liquibase/users_authorities.csv"
                   separator=";"
-                  tableName="user_authority"/>
+                  tableName="user_authorities"/>
+        <loadData encoding="UTF-8"
+                  file="config/liquibase/groups_authorities.csv"
+                  separator=";"
+                  tableName="group_authorities"/>
+
         <createTable tableName="jhi_persistent_audit_event">
             <column name="event_id" type="bigint" autoIncrement="${autoIncrement}">
                 <constraints primaryKey="true" nullable="false"/>
@@ -144,6 +243,41 @@
                                  constraintName="fk_evt_pers_audit_evt_data"
                                  referencedColumnNames="event_id"
                                  referencedTableName="jhi_persistent_audit_event"/>
+
+        <addPrimaryKey columnNames="client_id" constraintName="clientsPK" tableName="clients"/>
+        <addPrimaryKey columnNames="group_id" constraintName="groupsPK" tableName="groups"/>
+        <addPrimaryKey columnNames="user_id, group_id" tableName="group_users"/>
+        <addPrimaryKey columnNames="user_id, authority_name" tableName="user_authorities"/>
+        <addPrimaryKey columnNames="group_id, authority_name" tableName="group_authorities"/>
+        <addForeignKeyConstraint baseColumnNames="client_client_id" baseTableName="client_authorized_grants" constraintName="FKid1q3lphubtfnxaesg4xn9ris" deferrable="false" initiallyDeferred="false" referencedColumnNames="client_id" referencedTableName="clients"/>
+        <addForeignKeyConstraint baseColumnNames="client_client_id" baseTableName="client_registered_redirect_uris" constraintName="FKobjxds0cx0rgb6l9qtft505sy" deferrable="false" initiallyDeferred="false" referencedColumnNames="client_id" referencedTableName="clients"/>
+        <addForeignKeyConstraint baseColumnNames="client_client_id" baseTableName="client_scopes" constraintName="FKiy6m4ckx6b98swcsco07mkpx" deferrable="false" initiallyDeferred="false" referencedColumnNames="client_id" referencedTableName="clients"/>
+        <addForeignKeyConstraint baseColumnNames="group_id" baseTableName="group_users" constraintName="FK1tqlbnvol79qrsa1i4rmjfsi6" deferrable="false" initiallyDeferred="false" referencedColumnNames="group_id" referencedTableName="groups"/>
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="group_users" constraintName="FK6syyopfepdpec1ihe2v5klehr" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="users"/>
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_companies" constraintName="FKnv1a2e7xyd45ghv8s3y9lo4a0" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="users"/>
+        <addForeignKeyConstraint baseColumnNames="authority_name"
+                                 baseTableName="user_authorities"
+                                 constraintName="fk_user_authorities_authority_name"
+                                 referencedColumnNames="name"
+                                 referencedTableName="authorities"/>
+
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="user_authorities"
+                                 constraintName="fk_user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="users"/>
+        <addForeignKeyConstraint baseColumnNames="authority_name"
+                                 baseTableName="group_authorities"
+                                 constraintName="fk_group_authorities_authority_name"
+                                 referencedColumnNames="name"
+                                 referencedTableName="authorities"/>
+
+        <addForeignKeyConstraint baseColumnNames="group_id"
+                                 baseTableName="group_authorities"
+                                 constraintName="fk_group_authorities_group_id"
+                                 referencedColumnNames="group_id"
+                                 referencedTableName="groups"/>
+
     </changeSet>
 
 </databaseChangeLog>

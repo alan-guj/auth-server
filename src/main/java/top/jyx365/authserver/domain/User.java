@@ -39,6 +39,16 @@ import top.jyx365.authserver.config.Constants;
 @Entity
 @Table(name = "users")
 @EqualsAndHashCode(callSuper=false,of={"id","login"})
+@NamedEntityGraph(
+    name = "User.authority",
+    attributeNodes = {
+        @NamedAttributeNode("userCompanies"),
+        @NamedAttributeNode("authorities"),
+        @NamedAttributeNode(value="userGroups", subgraph="authority")
+        },
+    subgraphs = {
+        @NamedSubgraph(name="authority", attributeNodes=@NamedAttributeNode("authorities"))
+    })
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class User extends AbstractAuditingEntity implements Serializable {
 
@@ -111,7 +121,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public String getOpenid() {
         return openid;
     }
-    @ElementCollection( fetch = FetchType.EAGER )
+    @ElementCollection( fetch = FetchType.EAGER  )
     @CollectionTable( name = "user_companies" )
     private Set<UserCompany> userCompanies = new HashSet<>();
 

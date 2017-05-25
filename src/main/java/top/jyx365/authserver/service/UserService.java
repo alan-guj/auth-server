@@ -14,9 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -325,8 +327,13 @@ public class UserService {
         return userRepository.findOne(id);
     }
 
-    public List<User> findUsers(User user) {
-        return userRepository.findAll(Example.of(user));
+    public Set<UserInfo> findUsers(User user) {
+        //return userRepository.findAll(Example.of(user));
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withIgnorePaths("activated","createdDate","lastModifiedDate");
+        return userRepository.findAll(Example.of(user, matcher)).stream()
+            .map(UserInfo::convert)
+            .collect(Collectors.toSet());
     }
 
     public User save(User user) {
@@ -355,7 +362,7 @@ public class UserService {
             UserInfo userInfo = new UserInfo();
 
             Set<UserCompany> userCompanies = user.getUserCompanies();
-            Set<Group> userGroups = user.getUserGroups();
+            List<GrantedAuthority> authorities = user.getGrantedAuthorities();
 
             userInfo.setDesc(user.getDescription());
             userInfo.setEmail(user.getEmail());
@@ -373,14 +380,14 @@ public class UserService {
             }
 
             userInfo.setType("guest");
-            if(userGroups != null && !userGroups.isEmpty()) {
-                List<String> groups = userGroups.stream().map(Group::getGroupId)
+            if(authorities != null && !authorities.isEmpty()) {
+                List<String> authoritiesName = authorities.stream().map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
-                if(groups.contains(Group.SYSTEM_OPERATOR_GROUP))
+                if(authoritiesName.contains(AuthoritiesConstants.ADMIN))
                     userInfo.setType("system_operator");
-                else if(groups.contains(Group.ENTERPRISE_USER_GROUP))
+                else if(authoritiesName.contains(AuthoritiesConstants.ENTERPRISE_USER))
                     userInfo.setType("enterprise_user");
-                else if(groups.contains(Group.USER_GROUP))
+                else if(authoritiesName.contains(AuthoritiesConstants.USER))
                     userInfo.setType("user");
             }
             return userInfo;

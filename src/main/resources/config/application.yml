@@ -23,7 +23,7 @@ management:
             enabled: false # When using the MailService, configure an SMTP server and set this to true
 spring:
     application:
-        name: AuthServer
+        name: authserver
     cloud:
         consul:
             discovery:
@@ -48,6 +48,8 @@ spring:
             enabled: false
     thymeleaf:
         mode: XHTML
+    rabbitmq:
+        virtual-host: ${spring.profiles.active}
 
 security:
     basic:
@@ -60,8 +62,9 @@ server:
     session:
         cookie:
             http-only: true
-
-
+            
+amqp: 
+    topic: ${spring.application.name}
 # ===================================================================
 # JHipster specific properties
 #

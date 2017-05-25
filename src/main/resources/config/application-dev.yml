@@ -68,7 +68,10 @@ spring:
         locator:
             discovery:
                 enabled: true
-
+    rabbitmq:
+            host: 10.28.36.159
+            username: orgSrv
+            password: uUnD1vpym3dvVxZP
 liquibase:
     contexts: dev
 

@@ -62,6 +62,7 @@ public class UaaWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(
                     "/app/**/*.{js,html}",
+                    "/management/health",
                     "/bower_components/**",
                     "/i18n/**",
                     "/content/**",
@@ -69,7 +70,20 @@ public class UaaWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "/test/**",
                     "/h2-console/**"
                     ).permitAll()
-            .antMatchers("/api/**").hasAuthority(AuthoritiesConstants.ADMIN)
+            .antMatchers("/api/register").permitAll()
+            .antMatchers("/api/activate").permitAll()
+            .antMatchers("/api/authenticate").permitAll()
+            .antMatchers("/api/account/reset_password/init").permitAll()
+            .antMatchers("/api/account/reset_password/finish").permitAll()
+            .antMatchers("/api/profile-info").permitAll()
+            .antMatchers("/api/account","/api/account/**","/api/*/users/current","/api/*/users/check_token").authenticated()
+            .antMatchers("/api/**")
+                    .access("hasAnyAuthority('ROLE_SYSTEM','ROLE_ADMIN')")
+            .antMatchers("/management/health").permitAll()
+            .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
+            .antMatchers("/v2/api-docs/**").permitAll()
+            .antMatchers("/swagger-resources/configuration/ui").permitAll()
+            .antMatchers("/swagger-ui/index.html").hasAuthority(AuthoritiesConstants.ADMIN)
             .anyRequest().authenticated()
             .and().formLogin();
     }

@@ -106,7 +106,7 @@
             <column name="description" type="VARCHAR(2048)"/>
             <column name="mobile" type="VARCHAR(255)"/>
             <column name="nickname" type="VARCHAR(255)"/>
-            <column name="openid" type="VARCHAR(255)"/>
+            <column name="openid" type="VARCHAR(60)"/>
             <column name="origin" type="VARCHAR(255)"/>
             <column name="first_name" type="varchar(50)"/>
             <column name="last_name" type="varchar(50)"/>
@@ -140,7 +140,7 @@
         <createIndex indexName="idx_user_openid"
             tableName="users"
             unique="true">
-            <column name="openid" type="varchar(255)"/>
+            <column name="openid" type="varchar(60)"/>
         </createIndex>
 
         <createIndex indexName="idx_user_email"

@@ -228,11 +228,7 @@ class UserControllerV1 {
         user.setMobile(mobile);
         user.setOpenid(openid);
         user.setFirstName(name);
-        ret.put("users",userService.findUsers(user)
-            .stream()
-            .map(UserInfo::convert)
-            .collect(Collectors.toList())
-            );
+        ret.put("users",userService.findUsers(user));
         return ret;
     }
 

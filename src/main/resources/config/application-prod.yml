@@ -27,9 +27,9 @@ spring:
             port: 8500
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:mysql://localhost:3306/AuthServer?useUnicode=true&characterEncoding=utf8&useSSL=false
-        username: root
-        password:
+        url: jdbc:mysql://localhost:3306/auth_server_dev?useUnicode=true&characterEncoding=utf8&useSSL=false
+        username: auth_server_dev
+        password: zlep5pJfb1yh8XmP
         hikari:
             data-source-properties:
                 cachePrepStmts: true

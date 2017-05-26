@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include;
 import top.jyx365.authserver.config.Constants;
-import top.jyx365.authserver.config.weixin.WeixinUserInfo;
+import top.jyx365.authserver.service.weixin.WeixinUserInfoTokenServices.WeixinUserInfo;
 import top.jyx365.authserver.domain.Authority;
 import top.jyx365.authserver.domain.Group;
 import top.jyx365.authserver.domain.User;
@@ -236,7 +236,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
-        return userRepository.findOneWithAuthoritiesByLogin(login);
+        try {
+            Long id = Long.valueOf(login);
+            return Optional.ofNullable(userRepository.findOneWithAuthoritiesById(id));
+        } catch(NumberFormatException ex) {
+            //return userRepository.findOneWithAuthoritiesByLogin(login);
+            return userRepository.findOneWithAuthoritiesByOpenidOrMobileOrEmail(login,login,login);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -246,7 +252,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUserWithAuthorities() {
-        return userRepository.findOneWithAuthoritiesByLogin(SecurityUtils.getCurrentUserLogin()).orElse(null);
+        return this.getUserWithAuthoritiesByLogin(SecurityUtils.getCurrentUserLogin()).orElse(null);
+        //return userRepository.findOneWithAuthoritiesByLogin(SecurityUtils.getCurrentUserLogin()).orElse(null);
     }
 
 
@@ -295,8 +302,10 @@ public class UserService {
     public User addNewWeixinUser(WeixinUserInfo userInfo) {
         User user = new User();
         user.setOpenid(userInfo.getOpenid());
+        //user.setLogin(userInfo.getOpenid());
         user.setNickname(userInfo.getNickname());
         user.setImageUrl(userInfo.getHeadimgurl());
+        user.setOrigin("weixin");
         user.setActivated(true);
         return save(user);
     }

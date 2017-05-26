@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 
@@ -44,6 +45,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @EntityGraph(value="User.authority", type=EntityGraphType.LOAD)
     Optional<User> findOneWithAuthoritiesByLogin(String login);
+
+    @EntityGraph(value="User.authority", type=EntityGraphType.LOAD)
+    Optional<User> findOneWithAuthoritiesByOpenidOrMobileOrEmail(String openid, String mobile, String email);
 
     @EntityGraph(value="User.authority", type=EntityGraphType.LOAD)
     Optional<User> findOneWithAuthoritiesByOpenid(String openid);

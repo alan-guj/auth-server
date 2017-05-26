@@ -4,3 +4,5 @@ internal;password
 internal;authorization_code
 internal;refresh_token
 internal;implicit
+web_app;password
+web_app;implicit

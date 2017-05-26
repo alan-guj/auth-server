@@ -20,7 +20,7 @@ public class Client {
     @Column(length = 128)
     private String clientId;
 
-    @Column(length = 256, nullable = false)
+    @Column(length = 256, nullable = true)
     @JsonIgnore
     private String clientSecret;
 

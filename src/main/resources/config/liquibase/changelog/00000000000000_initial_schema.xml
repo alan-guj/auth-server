@@ -20,9 +20,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="access_token_validity_seconds" type="INT"/>
-            <column name="client_secret" type="VARCHAR(256)">
-                <constraints nullable="false"/>
-            </column>
+            <column name="client_secret" type="VARCHAR(256)"/>
             <column name="refresh_token_validity_seconds" type="INT"/>
             <column defaultValueNumeric="1" name="secret_required" type="TINYINT(1)"/>
             <column name="user_id" type="BIGINT"/>

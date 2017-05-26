@@ -1,2 +1,3 @@
 client_id; access_token_validity_seconds;client_secret;refresh_token_validity_seconds;secret_required;user_id
 internal;3600;internal;3600;1;null
+web_app;3600;null;3600;0;null

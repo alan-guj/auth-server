@@ -1,0 +1,18 @@
+spring:
+    rabbitmq:
+            host: 10.28.36.159
+            username: orgSrv
+            password: uUnD1vpym3dvVxZP
+
+weixin:
+    client:
+        clientId: wx2815bf2baac5a32f
+        clientSecret: f01e90ab273725b8f0b50228c80b04dd
+        accessTokenUri: https://api.weixin.qq.com/sns/oauth2/access_token
+        userAuthorizationUri: https://open.weixin.qq.com/connect/oauth2/authorize
+        scope: snsapi_userinfo
+        #useCurrentUri: false
+        #preEstablishedRedirectUri: http://dev.jyx365.top/oauthv2/login/weixin
+    resource:
+        userInfoUri: https://api.weixin.qq.com/sns/userinfo
+

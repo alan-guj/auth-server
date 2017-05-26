@@ -1,2 +1,3 @@
 client_client_id;scope
 internal;userinfo
+web_app;userinfo

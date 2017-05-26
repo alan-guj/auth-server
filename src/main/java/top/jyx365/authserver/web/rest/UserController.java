@@ -18,12 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 import top.jyx365.amqp.annotation.PublishMessage;
 
@@ -53,14 +55,19 @@ public class UserController {
 
 
     @GetMapping("current")
-    public Map<String,Object> userv2(OAuth2Authentication user) {
-        Map<String,Object> map = new LinkedHashMap<String,Object>();
-        map.put("user", user.getPrincipal());
-        map.put("authorities", user.getAuthorities());
-        map.put("details", user);
-        return map;
+    public ResponseEntity<Map<String,Object>> userv2() {
+        //return Optional.ofNullable(userService.getUserWithAuthorities())
+            //.map(user -> new ResponseEntity<>(new UserDTO(user), HttpStatus.OK))
+            //.orElse(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        return Optional.ofNullable(userService.getUserWithAuthorities())
+            .map(user -> {
+                Map<String,Object> map = new LinkedHashMap<String,Object>();
+                map.put("user", user);
+                map.put("authorities", user.getGrantedAuthorities());
+                return new ResponseEntity<>(map, HttpStatus.OK);
+            })
+            .orElse(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
-
 }
 
 
@@ -109,7 +116,7 @@ class UserControllerV1 {
     private UserService userService;
 
     @Autowired
-    private ClientRepository clientDao;
+    private ClientRepository clientRepository;
 
 
     //@GetMapping(value = {"check_token"})
@@ -145,22 +152,37 @@ class UserControllerV1 {
 
 
     @GetMapping(value = {"current","check_token"})
-    public Map<String,Object> currentUserv1(OAuth2Authentication auth) {
-        Map<String,Object> map = new LinkedHashMap<String,Object>();
+    public ResponseEntity<Map<String,Object>> currentUserv1(OAuth2Authentication auth) {
+
+
+        //Map<String,Object> map = new LinkedHashMap<String,Object>();
         //Map<String,Object> userInfo = new LinkedHashMap<String,Object>();
         //UserInfo userInfo = new UserInfo();
-        String principal = (String)auth.getPrincipal();
+        //String principal = (String)auth.getPrincipal();
         try {
-            Long userId = Long.valueOf(auth.getPrincipal().toString());
-            User user = userService.getUserWithAuthorities(userId);
-            UserInfo userInfo = UserInfo.convert(user);
-            map.put("user", userInfo);
-            map.put("authorities", userInfo.getType());
-            return map;
-        } catch( NumberFormatException ex ) {
+            return Optional.ofNullable(userService.getUserWithAuthorities())
+                .map(user -> {
+                    Map<String,Object> map = new LinkedHashMap<String,Object>();
+                    UserInfo userInfo = UserInfo.convert(user);
+                    map.put("user", userInfo);
+                    map.put("authorities", userInfo.getType());
+                    map.put("Authentication", auth);
+                    return new ResponseEntity<>(map, HttpStatus.OK);
+                })
+            .orElseThrow(() -> new ResourceNotFoundException());
+            //Long userId = Long.valueOf(auth.getPrincipal().toString());
+            //User user = userService.getUserWithAuthorities(userId);
+            //UserInfo userInfo = UserInfo.convert(user);
+            //map.put("user", userInfo);
+            //map.put("authorities", userInfo.getType());
+            //return map;
+        } catch( ResourceNotFoundException ex ) {
+            Map<String,Object> map = new LinkedHashMap<String,Object>();
             String clientId = (String)auth.getPrincipal();
-            Client client = clientDao.findOne(clientId);
-            User clientUser = client.getUser();
+            Client client = clientRepository.findOne(clientId);
+            User clientUser = null;
+            if( client!=null )
+                clientUser = client.getUser();
             //Map<String,Object> client = new HashMap<String,Object>();
             //client.put("name",(String)auth.getPrincipal());
             if(clientUser == null) {
@@ -173,7 +195,8 @@ class UserControllerV1 {
             map.put("client",client);
             map.put("auth",auth);
             map.put("authorities","system_service");
-            return map;
+            return new ResponseEntity<>(map, HttpStatus.OK);
+            //return map;
         }
     }
 

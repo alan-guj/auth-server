@@ -3,7 +3,7 @@ services:
     authserver-app:
         image: authserver
         environment:
-            - SPRING_PROFILES_ACTIVE=prod,swagger
+            - SPRING_PROFILES_ACTIVE=prod
             - JAVA_OPTS=-Xmx256m -Xms256m
             #- SPRING_CLOUD_CONSUL_HOST=consul
             #- SPRING_CLOUD_CONSUL_PORT=8500

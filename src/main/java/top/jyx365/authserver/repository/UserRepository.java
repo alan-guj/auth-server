@@ -47,7 +47,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findOneWithAuthoritiesByLogin(String login);
 
     @EntityGraph(value="User.authority", type=EntityGraphType.LOAD)
-    Optional<User> findOneWithAuthoritiesByOpenidOrMobileOrEmail(String openid, String mobile, String email);
+    Optional<User> findOneWithAuthoritiesByLoginOrOpenidOrMobileOrEmail(String login, String openid, String mobile, String email);
 
     @EntityGraph(value="User.authority", type=EntityGraphType.LOAD)
     Optional<User> findOneWithAuthoritiesByOpenid(String openid);

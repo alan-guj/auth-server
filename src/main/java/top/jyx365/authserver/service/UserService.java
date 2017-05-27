@@ -241,7 +241,7 @@ public class UserService {
             return Optional.ofNullable(userRepository.findOneWithAuthoritiesById(id));
         } catch(NumberFormatException ex) {
             //return userRepository.findOneWithAuthoritiesByLogin(login);
-            return userRepository.findOneWithAuthoritiesByOpenidOrMobileOrEmail(login,login,login);
+            return userRepository.findOneWithAuthoritiesByLoginOrOpenidOrMobileOrEmail(login,login,login,login);
         }
     }
 

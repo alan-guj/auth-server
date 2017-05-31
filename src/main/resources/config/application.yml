@@ -48,9 +48,6 @@ spring:
             enabled: false
     thymeleaf:
         mode: XHTML
-    rabbitmq:
-        virtual-host: ${spring.profiles.active}
-
 security:
     basic:
         enabled: false

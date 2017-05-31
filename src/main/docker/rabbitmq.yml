@@ -1,0 +1,12 @@
+version: '2'
+services:
+    rabbitmq:
+        image: rabbitmq:3-management
+        #environment:
+            #- RABBITMQ_DEFAULT_USER=admin
+            #- RABBITMQ_DEFAULT_PASS=jtqp1zV4roxZdkKN
+        hostname: dev4
+        ports:
+            - 15672:15672
+
+

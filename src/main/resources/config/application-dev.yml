@@ -68,7 +68,9 @@ spring:
         locator:
             discovery:
                 enabled: true
+
     rabbitmq:
+            virtual-host: dev
             host: 10.28.36.159
             username: orgSrv
             password: uUnD1vpym3dvVxZP

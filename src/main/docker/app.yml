@@ -3,36 +3,55 @@ services:
     authserver-app:
         image: authserver
         environment:
-            - SPRING_PROFILES_ACTIVE=prod
             - JAVA_OPTS=-Xmx256m -Xms256m
-            #- SPRING_CLOUD_CONSUL_HOST=consul
-            #- SPRING_CLOUD_CONSUL_PORT=8500
-            #- SPRING_DATASOURCE_URL=jdbc:mysql://authserver-mysql:3306/authserver?useUnicode=true&characterEncoding=utf8&useSSL=false
-            #- JHIPSTER_SLEEP=10 # gives time for the database to boot before the application
-        network_mode: "host"
+            - SPRING_PROFILES_ACTIVE=prod,swagger
+            - SPRING_RABBITMQ_HOST=rabbitmq
+            - SPRING_RABBITMQ_USERNAME=guest
+            - SPRING_RABBITMQ_PASSWORD=guest
+            - SPRING_CLOUD_CONSUL_HOST=consul
+            - SPRING_CLOUD_CONSUL_PORT=8500
+            - SPRING_DATASOURCE_URL=jdbc:mysql://authserver-mysql:3306/authserver?useUnicode=true&characterEncoding=utf8&useSSL=false
+            - SPRING_DATASOURCE_USERNAME=root
+            - SPRING_DATASOURCE_PASSWORD=
+            - SPRING_REDIS_HOST=redis
+            - JHIPSTER_SLEEP=10 # gives time for the database to boot before the application
         ports:
             - 9999:9999
-    #authserver-mysql:
-        #extends:
-            #file: mysql.yml
-            #service: authserver-mysql
-    #consul:
-        #image: consul:0.7.2
-        #command: consul agent -dev -ui -client 0.0.0.0
-        #ports:
-            #- 8300:8300
-            #- 8500:8500
-            #- 8600:8600
+    authserver-mysql:
+        extends:
+            file: mysql.yml
+            service: authserver-mysql
+    consul:
+        image: consul:0.7.2
+        command: consul agent -dev -ui -client 0.0.0.0
+        ports:
+            - 18300:8300
+            - 18500:8500
+            - 18600:8600
 
-    #consul-config-loader:
-        #image: jhipster/consul-config-loader:v0.2.1
-        #volumes:
-            #- ./central-server-config:/config
+    consul-config-loader:
+        image: jhipster/consul-config-loader:v0.2.1
+        volumes:
+            - ./central-server-config:/config
+        environment:
+            - INIT_SLEEP_SECONDS=5
+            - CONSUL_URL=consul
+            - CONSUL_PORT=8500
+        # Uncomment to load configuration into Consul from a git repository
+        # as configured in central-server-config/git2consul.json
+        # Also set SPRING_CLOUD_CONSUL_CONFIG_FORMAT=files on your apps
+        #    - CONFIG_MODE=git
+    #rabbitmq:
+            #extends:
+                #file: rabbitmq.yml
+               #service: rabbitmq
+    rabbitmq:
+        image: rabbitmq:3-management
         #environment:
-            #- INIT_SLEEP_SECONDS=5
-            #- CONSUL_URL=consul
-            #- CONSUL_PORT=8500
-         #Uncomment to load configuration into Consul from a git repository
-         #as configured in central-server-config/git2consul.json
-         #Also set SPRING_CLOUD_CONSUL_CONFIG_FORMAT=files on your apps
-            #- CONFIG_MODE=git
+            #- RABBITMQ_DEFAULT_USER=admin
+            #- RABBITMQ_DEFAULT_PASS=jtqp1zV4roxZdkKN
+        hostname: dev4
+        ports:
+            - 15672:15672
+    redis:
+        image: redis

@@ -1,8 +1,8 @@
-spring:
-    rabbitmq:
-            host: 10.28.36.159
-            username: orgSrv
-            password: uUnD1vpym3dvVxZP
+#spring:
+    #rabbitmq:
+            #host: 10.28.36.159
+            #username: orgSrv
+            #password: uUnD1vpym3dvVxZP
 
 weixin:
     client:

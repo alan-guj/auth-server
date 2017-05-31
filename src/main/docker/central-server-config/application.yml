@@ -2,8 +2,8 @@ configserver:
     name: Docker Consul Service
     status: Connected to Consul Server running in Docker
 
-jhipster:
-    security:
-        authentication:
-            jwt:
-                secret: my-secret-token-to-change-in-production
+#jhipster:
+    #security:
+        #authentication:
+            #jwt:
+                #secret: my-secret-token-to-change-in-production
